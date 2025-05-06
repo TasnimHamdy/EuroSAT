@@ -31,7 +31,7 @@ uploaded_file = st.file_uploader("Choose an image (RGB, 64x64 pixels recommended
 if uploaded_file is not None:
     # عرض الصورة
     image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    st.image(image, caption="Uploaded Image", use_container_width=True)
 
     # معالجة الصورة
     image = image.resize((64, 64))
