@@ -26,6 +26,6 @@ This is a web app built with **Streamlit** that allows users to upload satellite
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/your-username/eurosat-classifier.git
+git clone https://github.com/TasnimHamdy/EuroSAT.git
 cd eurosat-classifier
 pip install -r requirements.txt
