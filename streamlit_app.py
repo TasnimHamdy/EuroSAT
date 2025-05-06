@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 # تحميل النموذج
-model = load_model("eurosat_model.keras")
+model = load_model("eurosat_cnn_model.keras")
 class_names = sorted(os.listdir("EuroSAT/2750"))  # تأكد من المسار الصحيح للفئات
 
 # تهيئة الصفحة
