@@ -18,7 +18,7 @@ st.markdown(
 )
 
 # تحميل النموذج
-model_path = "eurosat_model.keras"
+model_path = "eurosat_cnn_model.keras"
 if os.path.exists(model_path):
     model = load_model(model_path)
 else:
