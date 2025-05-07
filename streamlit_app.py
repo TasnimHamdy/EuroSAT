@@ -1,57 +1,53 @@
 
 import streamlit as st
-from PIL import Image
 import numpy as np
-from tensorflow.keras.models import load_model
-import os
-
-# إعداد صفحة Streamlit
-st.set_page_config(page_title="تصنيف صور الأقمار الصناعية - EuroSAT", page_icon="🛰️", layout="centered")
+from PIL import Image
+from keras.models import load_model
+import tensorflow as tf
 
 # عنوان الصفحة
-st.markdown(
-    """
-    <h1 style='text-align: center; color: #4CAF50;'>🛰️ تصنيف صور الأقمار الصناعية باستخدام EuroSAT</h1>
-    <p style='text-align: center;'>ارفع صورة من القمر الصناعي ليتم تصنيفها تلقائيًا باستخدام نموذج الذكاء الاصطناعي المدرب.</p>
-    """,
-    unsafe_allow_html=True
-)
+st.set_page_config(page_title="🌍 EuroSAT Classifier", layout="centered")
 
 # تحميل النموذج
-model_path = "eurosat_cnn_model.keras"
-if os.path.exists(model_path):
-    model = load_model(model_path)
-else:
-    st.error("❌ لم يتم العثور على ملف النموذج. تأكد من أن 'eurosat_model.keras' موجود في نفس المجلد.")
-    st.stop()
+@st.cache_resource
+def load_eurosat_model():
+    model = load_model("eurosat_cnn_model.keras")
+    return model
 
-# إعداد فئات التصنيف
-class_labels = [
-    'AnnualCrop', 'Forest', 'HerbaceousVegetation', 'Highway',
-    'Industrial', 'Pasture', 'PermanentCrop', 'Residential',
-    'River', 'SeaLake'
-]
+model = load_eurosat_model()
 
-# تحميل الصورة من المستخدم
-uploaded_file = st.file_uploader("📤 ارفع صورة القمر الصناعي (JPEG/PNG)", type=["jpg", "jpeg", "png"])
+# خريطة التصنيفات (حسب تدريبك - عدل حسب الحاجة)
+class_names = ['AnnualCrop', 'Forest', 'HerbaceousVegetation', 'Highway', 
+               'Industrial', 'Pasture', 'PermanentCrop', 'Residential', 
+               'River', 'SeaLake']
 
-if uploaded_file:
-    try:
-        image = Image.open(uploaded_file).convert("RGB")
-        st.image(image, caption="📷 الصورة المُرفوعة", use_container_width=True)
+# عنوان الموقع
+st.title("🛰️ EuroSAT Land Use Classifier")
+st.markdown("Upload a satellite image and the model will classify the land use category.")
 
-        # تحويل الصورة لحجم الإدخال المناسب
-        image_resized = image.resize((64, 64))
-        img_array = np.array(image_resized) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
+# رفع صورة
+uploaded_file = st.file_uploader("Choose an image (RGB, 64x64 pixels recommended)", type=["jpg", "jpeg", "png"])
 
-        # التنبؤ بالفئة
-        prediction = model.predict(img_array)
-        predicted_class = class_labels[np.argmax(prediction)]
+if uploaded_file is not None:
+    # عرض الصورة
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Uploaded Image", use_container_width=True)
 
-        st.success(f"✅ الفئة المتوقعة: **{predicted_class}**")
+    # معالجة الصورة
+    image = image.resize((64, 64))
+    img_array = np.array(image) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
 
-    except Exception as e:
-        st.error(f"حدث خطأ أثناء معالجة الصورة: {e}")
-else:
-    st.info("👆 قم برفع صورة لتبدأ عملية التصنيف.")
+    # تنبؤ
+    prediction = model.predict(img_array)
+    predicted_class = class_names[np.argmax(prediction)]
+    confidence = np.max(prediction) * 100
+
+    # عرض النتيجة
+    st.success(f"🧠 Predicted Class: **{predicted_class}**")
+    st.info(f"🔍 Confidence: **{confidence:.2f}%**")
+
+    # عرض احتمالات كل الفئات
+    st.subheader("🔢 Prediction Probabilities:")
+    for i, class_name in enumerate(class_names):
+        st.write(f"{class_name}: {prediction[0][i]:.4f}")
